@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/base/buttons/button'
-import { Input } from '@/components/base/input/input'
-import { Label } from '@/components/base/input/label'
-import { Checkbox } from '@/components/base/checkbox/checkbox'
-import { signUp } from '@/lib/auth'
+import { Button } from '../../../components/base/buttons/button'
+import { Input } from '../../../components/base/input/input'
+import { Label } from '../../../components/base/input/label'
+import { Checkbox } from '../../../components/base/checkbox/checkbox'
+import { signUp } from '../../../lib/auth'
 
 export default function SignUpPage() {
   const router = useRouter()

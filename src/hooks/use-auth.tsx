@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import { signIn, signUp, signOut, signInWithMagicLink, resetPassword } from '@/lib/auth'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { signIn, signUp, signOut, signInWithMagicLink, resetPassword } from '../lib/auth'
 
 type AuthContextType = {
   user: User | null
   session: Session | null
   loading: boolean
+  isConfigured: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signUp: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
@@ -22,8 +23,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const isConfigured = isSupabaseConfigured()
 
   useEffect(() => {
+    if (!isConfigured || !supabase) {
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -41,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [isConfigured])
 
   const handleSignIn = async (email: string, password: string) => {
     const result = await signIn(email, password)
@@ -73,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         loading,
+        isConfigured,
         signIn: handleSignIn,
         signUp: handleSignUp,
         signOut: handleSignOut,

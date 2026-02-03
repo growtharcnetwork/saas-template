@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { getSupabaseClient, isSupabaseConfigured } from './supabase'
 
 export type AuthError = {
   message: string
@@ -10,9 +10,20 @@ export type AuthResult<T> = {
   error: AuthError | null
 }
 
+function checkSupabase(): AuthResult<never> | null {
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: { message: 'Supabase is not configured', status: 503 } }
+  }
+  return null
+}
+
 // Sign up with email and password
 export async function signUp(email: string, password: string): Promise<AuthResult<{ user: any }>> {
+  const check = checkSupabase()
+  if (check) return check
+  
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -30,7 +41,11 @@ export async function signUp(email: string, password: string): Promise<AuthResul
 
 // Sign in with email and password
 export async function signIn(email: string, password: string): Promise<AuthResult<{ user: any; session: any }>> {
+  const check = checkSupabase()
+  if (check) return check
+  
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -48,11 +63,15 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 
 // Sign in with magic link (passwordless)
 export async function signInWithMagicLink(email: string): Promise<AuthResult<{ message: string }>> {
+  const check = checkSupabase()
+  if (check) return check
+  
   try {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || ''}/auth/callback`,
       },
     })
     
@@ -68,7 +87,11 @@ export async function signInWithMagicLink(email: string): Promise<AuthResult<{ m
 
 // Sign out
 export async function signOut(): Promise<AuthResult<{ message: string }>> {
+  const check = checkSupabase()
+  if (check) return check
+  
   try {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signOut()
     
     if (error) {
@@ -83,21 +106,29 @@ export async function signOut(): Promise<AuthResult<{ message: string }>> {
 
 // Get current session
 export async function getSession() {
+  if (!isSupabaseConfigured()) return { session: null, error: null }
+  const supabase = getSupabaseClient()
   const { data: { session }, error } = await supabase.auth.getSession()
   return { session, error }
 }
 
 // Get current user
 export async function getUser() {
+  if (!isSupabaseConfigured()) return { user: null, error: null }
+  const supabase = getSupabaseClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   return { user, error }
 }
 
 // Password reset request
 export async function resetPassword(email: string): Promise<AuthResult<{ message: string }>> {
+  const check = checkSupabase()
+  if (check) return check
+  
   try {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || ''}/auth/reset-password`,
     })
     
     if (error) {
@@ -112,7 +143,11 @@ export async function resetPassword(email: string): Promise<AuthResult<{ message
 
 // Update password
 export async function updatePassword(newPassword: string): Promise<AuthResult<{ message: string }>> {
+  const check = checkSupabase()
+  if (check) return check
+  
   try {
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     })
@@ -129,5 +164,7 @@ export async function updatePassword(newPassword: string): Promise<AuthResult<{ 
 
 // Listen for auth state changes
 export function onAuthStateChange(callback: (event: string, session: any) => void) {
+  if (!isSupabaseConfigured()) return { data: { subscription: { unsubscribe: () => {} } } }
+  const supabase = getSupabaseClient()
   return supabase.auth.onAuthStateChange(callback)
 }

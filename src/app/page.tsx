@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/components/base/buttons/button'
+import { Button } from '../components/base/buttons/button'
 
 export default function LandingPage() {
   return (

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/base/buttons/button'
-import { Input } from '@/components/base/input/input'
-import { Label } from '@/components/base/input/label'
+import { Button } from '../../../components/base/buttons/button'
+import { Input } from '../../../components/base/input/input'
+import { Label } from '../../../components/base/input/label'
 
 export default function SettingsPage() {
   const [name, setName] = useState('User Name')
@@ -69,7 +69,7 @@ export default function SettingsPage() {
           <p className="text-fg-tertiary mb-4">
             Once you delete your account, there is no going back.
           </p>
-          <Button color="primary-destructive" size="md">
+          <Button color="destructive" size="md">
             Delete Account
           </Button>
         </section>

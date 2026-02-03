@@ -1,6 +1,6 @@
 // Audit Logging System
 
-import { supabase } from './supabase'
+import { supabase, isSupabaseConfigured } from './supabase'
 
 export type AuditAction = 
   | 'user.login'
@@ -44,6 +44,10 @@ export type AuditLogInput = Omit<AuditLogEntry, 'id' | 'timestamp'>
 
 // Log an audit event
 export async function logAuditEvent(entry: AuditLogInput): Promise<{ success: boolean; error: string | null }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { success: false, error: 'Supabase not configured' }
+  }
+  
   try {
     const { error } = await supabase
       .from('audit_logs')
@@ -75,6 +79,10 @@ export async function getUserAuditLogs(
   userId: string, 
   options?: { limit?: number; offset?: number; action?: AuditAction }
 ): Promise<{ logs: AuditLogEntry[]; error: string | null }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { logs: [], error: 'Supabase not configured' }
+  }
+  
   try {
     let query = supabase
       .from('audit_logs')
@@ -125,6 +133,10 @@ export async function getResourceAuditLogs(
   resourceId: string,
   options?: { limit?: number }
 ): Promise<{ logs: AuditLogEntry[]; error: string | null }> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { logs: [], error: 'Supabase not configured' }
+  }
+  
   try {
     const { data, error } = await supabase
       .from('audit_logs')
